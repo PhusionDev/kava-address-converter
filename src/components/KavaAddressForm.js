@@ -1,38 +1,71 @@
 import React, { useState } from 'react';
-import { convertEthAddressToKava } from '../utils/kavaAddressConverter';
+import {
+  convertEthAddressToKava,
+  convertKavaAddressToEth,
+  isEthAddress,
+  isKavaAddress,
+} from '../utils/kavaAddressConverter';
 
 const KavaAddressForm = () => {
-  const [ethAddress, setEthAddress] = useState('');
-  const [kavaAddress, setKavaAddress] = useState('');
+  const [userInput, setUserInput] = useState('');
+  const [output, setOutput] = useState('');
+  const [validInput, setValidInput] = useState(false);
 
-  const handleChange = (event) => {
-    setEthAddress(event.target.value);
+  const inputMessage = () => {
+    if (validInput) {
+      const baseMessage = isEthAddress(userInput)
+        ? 'Eth (0x) Address: '
+        : 'Kava Address: ';
+      return baseMessage + userInput;
+    } else {
+      return '';
+    }
   };
 
-  const handleSubmit = (event) => {
-    event.preventDefault();
-    const kavaAddress = convertEthAddressToKava(ethAddress);
-    setKavaAddress(kavaAddress);
+  const outputMessage = () => {
+    if (validInput) {
+      const baseMessage = isEthAddress(userInput)
+        ? 'Kava Address: '
+        : 'Eth (0x) Address: ';
+      return baseMessage + output;
+    } else {
+      return '';
+    }
+  };
+
+  const handleChange = (event) => {
+    setUserInput(event.target.value);
+    const userInput = event.target.value;
+    if (isEthAddress(userInput)) {
+      const kavaAddress = convertEthAddressToKava(userInput);
+      setOutput(kavaAddress);
+      setValidInput(true);
+    } else if (isKavaAddress(userInput)) {
+      const ethAddress = convertKavaAddressToEth(userInput);
+      setOutput(ethAddress);
+      setValidInput(true);
+    } else {
+      setOutput('');
+      setValidInput(false);
+    }
   };
 
   return (
     <main>
-      <h1>Eth (0x) to Kava Address Converter</h1>
+      <h1>Kava/Ethereum (0x) Address Converter</h1>
       <form className='inputForm'>
         <input
-          className='ethAddressInput'
-          name='ethAddress'
+          className='addressInput'
+          name='addressInput'
           type='text'
-          placeholder='Enter ETH (0x) Address'
+          placeholder='Enter ETH or Kava Address'
           onChange={handleChange}
-          value={ethAddress}
+          value={userInput}
         />
-        <button className='submitButton' onClick={handleSubmit}>
-          Convert Address
-        </button>
       </form>
-      <div className='kavaAddressOutput'>
-        <p>{kavaAddress}</p>
+      <div className='addressOutput'>
+        <p>{inputMessage()}</p>
+        <p>{outputMessage()}</p>
       </div>
     </main>
   );
